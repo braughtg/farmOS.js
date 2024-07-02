@@ -12,9 +12,9 @@ describe('parseFilter', () => {
     };
     const params = parseFilter(filter);
     expect(params).to.equalIgnoreSpaces(`
-      filter[id-0-filter][condition][path]=id
-      &filter[id-0-filter][condition][operator]=%3D
-      &filter[id-0-filter][condition][value]=0c17b744-1ce8-4d42-af14-0ab90d6581d3
+      filter[id-1-filter][condition][path]=id
+      &filter[id-1-filter][condition][operator]=%3D
+      &filter[id-1-filter][condition][value]=0c17b744-1ce8-4d42-af14-0ab90d6581d3
     `);
   });
   it('parses a more complex query', () => {
@@ -25,31 +25,31 @@ describe('parseFilter', () => {
       ],
     };
     const params = parseFilter(filter);
-    expect(params).to.equalIgnoreSpaces(`
-      filter%5Bgroup-1%5D%5Bgroup%5D%5Bconjunction%5D=OR
-      &filter%5Bstatus-0-filter%5D%5Bcondition%5D%5Bpath%5D=status
-      &filter%5Bstatus-0-filter%5D%5Bcondition%5D%5Boperator%5D=%3D
-      &filter%5Bstatus-0-filter%5D%5Bcondition%5D%5Bvalue%5D=done
-      &filter%5Bstatus-0-filter%5D%5Bcondition%5D%5BmemberOf%5D=group-1
-      &filter%5Bcount-0-filter%5D%5Bcondition%5D%5Bpath%5D=count
-      &filter%5Bcount-0-filter%5D%5Bcondition%5D%5Boperator%5D=%3E
-      &filter%5Bcount-0-filter%5D%5Bcondition%5D%5Bvalue%5D=35
-      &filter%5Bcount-1-filter%5D%5Bcondition%5D%5Bpath%5D=count
-      &filter%5Bcount-1-filter%5D%5Bcondition%5D%5Boperator%5D=%3C
-      &filter%5Bcount-1-filter%5D%5Bcondition%5D%5Bvalue%5D=43
-      &filter%5Bid-0-filter%5D%5Bcondition%5D%5Bpath%5D=id
-      &filter%5Bid-0-filter%5D%5Bcondition%5D%5Boperator%5D=%3D
-      &filter%5Bid-0-filter%5D%5Bcondition%5D%5Bvalue%5D=1234
-      &filter%5Bid-0-filter%5D%5Bcondition%5D%5BmemberOf%5D=group-1
+    expect(decodeURI(params)).to.equalIgnoreSpaces(`
+      filter[group-1][group][conjunction]=OR
+      &filter[status-2-filter][condition][path]=status
+      &filter[status-2-filter][condition][operator]=%3D
+      &filter[status-2-filter][condition][value]=done
+      &filter[status-2-filter][condition][memberOf]=group-1
+      &filter[count-1-filter][condition][path]=count
+      &filter[count-1-filter][condition][operator]=>
+      &filter[count-1-filter][condition][value]=35
+      &filter[count-2-filter][condition][path]=count
+      &filter[count-2-filter][condition][operator]=<
+      &filter[count-2-filter][condition][value]=43
+      &filter[id-3-filter][condition][path]=id
+      &filter[id-3-filter][condition][operator]=%3D
+      &filter[id-3-filter][condition][value]=1234
+      &filter[id-3-filter][condition][memberOf]=group-1
   `);
   });
   it('parses a filter with dot notation', () => {
     const filter = { 'owner.id': 1 };
     const params = parseFilter(filter);
     expect(params).to.equalIgnoreSpaces(`
-      filter[owner.id-0-filter][condition][path]=owner.id
-      &filter[owner.id-0-filter][condition][operator]=%3D
-      &filter[owner.id-0-filter][condition][value]=1
+      filter[owner.id-1-filter][condition][path]=owner.id
+      &filter[owner.id-1-filter][condition][operator]=%3D
+      &filter[owner.id-1-filter][condition][value]=1
     `);
   });
   it('parses a filter with an array operator ($in)', () => {
@@ -60,10 +60,29 @@ describe('parseFilter', () => {
     };
     const params = parseFilter(filter);
     expect(params).to.equalIgnoreSpaces(`
-      filter[log_category-0-filter][condition][path]=log_category
-      &filter[log_category-0-filter][condition][operator]=IN
-      &filter[log_category-0-filter][condition][value][0]=soil
-      &filter[log_category-0-filter][condition][value][1]=water
+      filter[log_category-1-filter][condition][path]=log_category
+      &filter[log_category-1-filter][condition][operator]=IN
+      &filter[log_category-1-filter][condition][value][0]=soil
+      &filter[log_category-1-filter][condition][value][1]=water
+    `);
+  });
+  it('parses a filter with an array operator ($or)', () => {
+    const filter = {
+      land_type: {
+        $or: ['field', 'bed'],
+      },
+    };
+    const params = parseFilter(filter);
+    expect(decodeURI(params)).to.equalIgnoreSpaces(`
+      filter[group-1][group][conjunction]=OR
+      &filter[land_type-2-filter][condition][path]=land_type
+      &filter[land_type-2-filter][condition][operator]=%3D
+      &filter[land_type-2-filter][condition][value]=field
+      &filter[land_type-2-filter][condition][memberOf]=group-1
+      &filter[land_type-3-filter][condition][path]=land_type
+      &filter[land_type-3-filter][condition][operator]=%3D
+      &filter[land_type-3-filter][condition][value]=bed
+      &filter[land_type-3-filter][condition][memberOf]=group-1
     `);
   });
 });

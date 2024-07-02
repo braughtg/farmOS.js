@@ -43,8 +43,8 @@ function transformRawValue(transform, raw) {
 export default function parseFilter(filter = {}, options = {}) {
   const { filterTransforms = {} } = options;
 
-  function parseComparison(path, expr, comGroup = null, index = 0) {
-    const amp = index > 0 ? '&' : '';
+  function parseComparison(path, expr, comGroup = null, index = 1) {
+    const amp = index > 1 ? '&' : '';
     const pre = `filter[${path}-${index}-filter][condition]`;
     const membership = comGroup ? `&${pre}[memberOf]=${comGroup}` : '';
     const [[op, rawValue], ...tail] = Object.entries(expr);
@@ -73,14 +73,14 @@ export default function parseFilter(filter = {}, options = {}) {
     const membership = logicGroup ? `&filter[${label}][condition][memberOf]=${logicGroup}` : '';
     return filters.reduce(
       // eslint-disable-next-line no-use-before-define
-      (params, f) => mergeParams(params, parser(f, label, logicDepth + 1)),
+      (params, f, i) => mergeParams(params, parser(f, label, logicDepth + i)),
       conjunction + membership,
     );
   }
 
   function parseField(path, val, fieldGroup, fieldDepth) {
     if (isPrim(val)) {
-      return parseComparison(path, { $eq: val }, fieldGroup);
+      return parseComparison(path, { $eq: val }, fieldGroup, fieldDepth+1);
     }
     if (Array.isArray(val) || '$or' in val) {
       const arr = Array.isArray(val) ? val : val.$or;
@@ -100,7 +100,7 @@ export default function parseFilter(filter = {}, options = {}) {
     }
     // Otherwise we assume val is an object and all its properties are comparison
     // operators; parseComparison will throw if any property is NOT a comp op.
-    return parseComparison(path, val, fieldGroup);
+    return parseComparison(path, val, fieldGroup, fieldDepth + 1);
   }
 
   const parser = (_filter, group, depth = 0) => {
